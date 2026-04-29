@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}DataCollect CM — Accueil{% endblock %}
+
+{% block extra_styles %}
+<style>
+.hero {
+    text-align: center;
+    padding: 4rem 1rem 3rem;
+    animation: fadeUp 0.6s ease;
+}
+.hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 1rem;
+}
+.hero h1 .accent { color: var(--accent); }
+.hero p {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 550px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+}
+.stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+.stat-item {
+    text-align: center;
+}
+.stat-item .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+}
+.stat-item .lbl {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.domains-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+.domain-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+}
+.domain-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+}
+.domain-card.sante::before { background: var(--sante); }
+.domain-card.agriculture::before { background: var(--agriculture); }
+.domain-card.education::before { background: var(--education); }
+.domain-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,212,255,0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+.domain-card:nth-child(1) { animation-delay: 0.1s; }
+.domain-card:nth-child(2) { animation-delay: 0.2s; }
+.domain-card:nth-child(3) { animation-delay: 0.3s; }
+.domain-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+.domain-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.domain-card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+.domain-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.record-count {
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+.domain-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.chip {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.chip.collect { border-color: var(--accent); color: var(--accent); }
+.chip.collect:hover { background: var(--accent); color: var(--bg); }
+.chip.analyse { border-color: var(--border); color: var(--muted); }
+.chip.analyse:hover { border-color: var(--text); color: var(--text); }
+.section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+.divider {
+    width: 40px;
+    height: 3px;
+    background: var(--accent);
+    margin: 0.5rem 0 2rem;
+    border-radius: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Collectez. Analysez.<br><span class="accent">Décidez.</span></h1>
+    <p>Plateforme de collecte et d'analyse descriptive des données pour trois secteurs stratégiques au Cameroun.</p>
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="num">{{ stats.sante + stats.agriculture + stats.education }}</div>
+            <div class="lbl">Observations totales</div>
+        </div>
+        <div class="stat-item">
+            <div class="num">3</div>
+            <div class="lbl">Domaines actifs</div>
+        </div>
+        <div class="stat-item">
+            <div class="num">10</div>
+            <div class="lbl">Régions couvertes</div>
+        </div>
+    </div>
+</div>
+
+<p class="section-title">Domaines de collecte</p>
+<div class="divider"></div>
+
+<div class="domains-grid">
+    <div class="domain-card sante">
+        <span class="domain-icon">🏥</span>
+        <h3>Santé & Épidémiologie</h3>
+        <p>Collecte de données anthropométriques et cliniques : IMC, tension artérielle, glycémie, antécédents médicaux par région.</p>
+        <div class="domain-meta">
+            <span class="record-count">{{ stats.sante }} enregistrements</span>
+            <div class="domain-actions">
+                <a href="/collect/sante" class="chip collect">+ Collecter</a>
+                <a href="/analyse/sante" class="chip analyse">Analyser</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="domain-card agriculture">
+        <span class="domain-icon">🌾</span>
+        <h3>Agriculture & Environnement</h3>
+        <p>Suivi des rendements agricoles, types de sol, pluviométrie, et pratiques culturales par culture et région du Cameroun.</p>
+        <div class="domain-meta">
+            <span class="record-count">{{ stats.agriculture }} enregistrements</span>
+            <div class="domain-actions">
+                <a href="/collect/agriculture" class="chip collect">+ Collecter</a>
+                <a href="/analyse/agriculture" class="chip analyse">Analyser</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="domain-card education">
+        <span class="domain-icon">🎓</span>
+        <h3>Éducation & Performance</h3>
+        <p>Données académiques : notes par matière, temps d'étude, accès aux ressources numériques, niveaux et régions.</p>
+        <div class="domain-meta">
+            <span class="record-count">{{ stats.education }} enregistrements</span>
+            <div class="domain-actions">
+                <a href="/collect/education" class="chip collect">+ Collecter</a>
+                <a href="/analyse/education" class="chip analyse">Analyser</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top:3rem; padding:1.5rem; background:var(--surface2); border-radius:12px; border:1px solid var(--border);">
+    <p style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.5rem;">INF232 EC2 — Analyse de données</p>
+    <p style="color:var(--muted); font-size:0.88rem; line-height:1.8;">
+        Cette application illustre : <strong style="color:var(--text)">Collecte structurée</strong> → 
+        <strong style="color:var(--text)">Statistiques descriptives</strong> (moyenne, médiane, écart-type, quartiles) → 
+        <strong style="color:var(--text)">Visualisation</strong> → 
+        <strong style="color:var(--text)">Export CSV</strong> pour analyses avancées (régression, classification).
+    </p>
+</div>
+{% endblock %}
