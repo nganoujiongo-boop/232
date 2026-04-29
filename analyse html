@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Analyse — {{ info.label }}{% endblock %}
+
+{% block extra_styles %}
+<style>
+.page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 1rem;
+    animation: fadeUp 0.4s ease;
+}
+.page-header-left { display: flex; align-items: center; gap: 1rem; }
+.page-header-left .icon { font-size: 2.5rem; }
+.page-header h1 { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; }
+.page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+.summary-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+    animation: fadeUp 0.5s ease 0.1s both;
+}
+.summary-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem; text-align: center;
+}
+.summary-card .val {
+    font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent);
+}
+.summary-card .key { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.section { margin-bottom: 3rem; animation: fadeUp 0.5s ease 0.2s both; }
+.section-head {
+    font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.stats-table-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+.stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem;
+}
+.stat-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+.stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-row .sk { color: var(--muted); }
+.stat-row .sv { font-weight: 600; font-family: 'Syne', sans-serif; color: var(--accent); }
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+.cat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem;
+}
+.cat-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; }
+.bar-item { margin-bottom: 0.6rem; }
+.bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; }
+.bar-label span:first-child { color: var(--muted); }
+.bar-label span:last-child { font-weight: 600; color: var(--text); }
+.bar-track { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 1s ease; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th {
+    background: var(--surface2); padding: 0.7rem 0.8rem; text-align: left;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); color: var(--text); }
+.data-table tr:hover td { background: var(--surface2); }
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+.no-data {
+    text-align: center; padding: 4rem 2rem;
+    color: var(--muted); font-size: 1rem;
+}
+.no-data .big { font-size: 3rem; margin-bottom: 1rem; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.tab {
+    padding: 0.5rem 1.2rem; border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+    background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif;
+}
+.tab.active, .tab:hover { background: var(--surface2); border-color: var(--accent); color: var(--text); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.domain-links-bar { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.domain-link {
+    padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--border);
+    text-decoration: none; font-size: 0.82rem; font-weight: 500; transition: all 0.2s; color: var(--muted);
+}
+.domain-link:hover, .domain-link.active { border-color: var(--accent); color: var(--accent); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="domain-links-bar">
+    <a href="/analyse/sante" class="domain-link {% if domain == 'sante' %}active{% endif %}">🏥 Santé</a>
+    <a href="/analyse/agriculture" class="domain-link {% if domain == 'agriculture' %}active{% endif %}">🌾 Agriculture</a>
+    <a href="/analyse/education" class="domain-link {% if domain == 'education' %}active{% endif %}">🎓 Éducation</a>
+</div>
+
+<div class="page-header">
+    <div class="page-header-left">
+        <span class="icon">{{ info.icon }}</span>
+        <div>
+            <h1>Analyse — {{ info.label }}</h1>
+            <p>Statistiques descriptives sur les données collectées</p>
+        </div>
+    </div>
+    <div style="display:flex; gap:0.8rem;">
+        <a href="/collect/{{ domain }}" class="btn btn-primary">+ Collecter</a>
+        <a href="/api/export/{{ domain }}" class="btn btn-outline">⬇ CSV</a>
+    </div>
+</div>
+
+{% if total == 0 %}
+<div class="no-data">
+    <div class="big">📭</div>
+    <p>Aucune donnée collectée pour ce domaine.</p>
+    <a href="/collect/{{ domain }}" class="btn btn-primary" style="margin-top:1rem;">Commencer la collecte</a>
+</div>
+{% else %}
+
+<div class="summary-row">
+    <div class="summary-card">
+        <div class="val">{{ total }}</div>
+        <div class="key">Observations</div>
+    </div>
+    {% for fname, data in numeric_stats.items() %}
+    {% if loop.index <= 3 and data.stats %}
+    <div class="summary-card">
+        <div class="val">{{ data.stats.mean }}</div>
+        <div class="key">Moy. {{ data.label[:15] }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('stats')">📊 Statistiques</button>
+    <button class="tab" onclick="switchTab('categories')">📋 Catégories</button>
+    <button class="tab" onclick="switchTab('donnees')">🗂 Données brutes</button>
+</div>
+
+<div id="tab-stats" class="tab-panel active">
+    <div class="section">
+        <div class="section-head">🔢 Variables numériques — Résumé statistique</div>
+        <div class="stats-table-grid">
+            {% for fname, data in numeric_stats.items() %}
+            {% if data.stats %}
+            <div class="stat-card">
+                <h4>{{ data.label }}</h4>
+                <div class="stat-row"><span class="sk">N (observations)</span><span class="sv">{{ data.stats.n }}</span></div>
+                <div class="stat-row"><span class="sk">Moyenne (x̄)</span><span class="sv">{{ data.stats.mean }}</span></div>
+                <div class="stat-row"><span class="sk">Médiane (Me)</span><span class="sv">{{ data.stats.median }}</span></div>
+                <div class="stat-row"><span class="sk">Écart-type (σ)</span><span class="sv">{{ data.stats.std }}</span></div>
+                <div class="stat-row"><span class="sk">Minimum</span><span class="sv">{{ data.stats.min }}</span></div>
+                <div class="stat-row"><span class="sk">Maximum</span><span class="sv">{{ data.stats.max }}</span></div>
+                <div class="stat-row"><span class="sk">Q1 (25%)</span><span class="sv">{{ data.stats.q1 }}</span></div>
+                <div class="stat-row"><span class="sk">Q3 (75%)</span><span class="sv">{{ data.stats.q3 }}</span></div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="tab-categories" class="tab-panel">
+    <div class="section">
+        <div class="section-head">📝 Variables catégorielles — Distributions</div>
+        <div class="cat-grid">
+            {% for fname, data in categorical_counts.items() %}
+            {% if data.counts %}
+            <div class="cat-card">
+                <h4>{{ data.label }}</h4>
+                {% set max_count = data.counts.values() | max %}
+                {% for val, count in data.counts.items() | sort(attribute='1', reverse=True) %}
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>{{ val }}</span>
+                        <span>{{ count }} ({{ ((count / total) * 100) | round(1) }}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: {{ ((count / max_count) * 100) | round }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="tab-donnees" class="tab-panel">
+    <div class="section">
+        <div class="section-head">🗂 Données brutes ({{ total }} observations)</div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        {% for field in info.fields[:6] %}
+                        <th>{{ field.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records[-50:] | reverse %}
+                    <tr>
+                        <td>{{ record._id }}</td>
+                        <td>{{ record._timestamp[:10] }}</td>
+                        {% for field in info.fields[:6] %}
+                        <td>{{ record.get(field.name, '—') }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total > 50 %}
+        <p style="color:var(--muted); font-size:0.8rem; margin-top:0.8rem; text-align:center;">
+            Affichage des 50 dernières observations. Exportez en CSV pour tout voir.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}
